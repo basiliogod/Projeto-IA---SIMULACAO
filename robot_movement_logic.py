@@ -191,6 +191,7 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
     EXPECTED_SEGMENT_ANGLE = 60         # Ângulo esperado entre duas linhas consecutivas
     KP_GAIN = 1.5                 
 
+    
     # Funcao para atacar
     def check_and_attack(current_idx):
        
@@ -214,9 +215,6 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
                     base_speed=forward_speed, 
                     kp=KP_GAIN
                 )
-                
-                tank_pair.off()
-                sleep(0.5)
 
                 # Executa a ação de ataque passada como callback
                 scheduled_actions[current_idx]()
@@ -249,7 +247,7 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
         scanning = True
         
         print("\nA iniciar rotina de rotacao para ataques multiplos. Alvos: {}".format(list(scheduled_actions.keys())))
-        
+        print("\nComecando na Linha 0")
         # Verifica a posição inicial (linha 0) antes de começar a girar
         check_and_attack(current_line_index)
 
@@ -258,7 +256,7 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
             
             # Condição de paragem: se o robot deu uma volta completa ou passou por todas as 6 linhas
             if accumulated_angle >= FULL_TURN_MIN_ANGLE or current_line_index >= 6:
-                print("Volta completa. De regresso a posicao inicial.")
+                print("Volta completa. De regresso a posicao inicial (linha 0).")
                 break
 
             gyro.reset()

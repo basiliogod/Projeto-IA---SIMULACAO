@@ -97,9 +97,9 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
             print("\n--- Campo de Batalha Apos Ataques (Turno {}) ---".format(current_turn))
             for i, enemy in enumerate(enemies):
                 if enemy is None:
-                    print("Posicao {}: Vazio".format(i+1))
+                    print("Slot {}: Vazio".format(i+1))
                 else:
-                    print("Posicao {}: {}".format(i+1, enemy))
+                    print("Slot {}: {}".format(i+1, enemy))
 
 
 

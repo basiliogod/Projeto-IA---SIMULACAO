@@ -24,7 +24,7 @@ class ColorSensor(MockDevice):
 class UltrasonicSensor(MockDevice):
     @property
     def distance_centimeters(self):
-        return random.uniform(5.0, 50.0)
+        return random.uniform(5.0, 39.0)
 
 class GyroSensor(MockDevice):
     def __init__(self, port):
