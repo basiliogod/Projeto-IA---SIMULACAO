@@ -1,6 +1,6 @@
 from ev3dev2_mock import (MoveTank, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, 
                               ColorSensor, UltrasonicSensor, GyroSensor, 
-                              INPUT_1, INPUT_2, INPUT_4, Sound)
+                              INPUT_1, INPUT_2, INPUT_4, Sound, SpeedPercent)
 import os
 import random
 

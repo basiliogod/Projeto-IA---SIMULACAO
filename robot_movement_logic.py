@@ -4,7 +4,7 @@ import threading
 import os
 from ev3dev2_mock import (MoveTank, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_C, 
                               ColorSensor, UltrasonicSensor, GyroSensor, 
-                              INPUT_1, INPUT_2, INPUT_4, Sound)
+                              INPUT_1, INPUT_2, INPUT_4, Sound, SpeedPercent)
 from tools import clamp_speed
 from config import OBJECT_SEARCH_DISTANCE_CM, LINE_COLOR_NAME, SPIN_SEARCH_SPEED, SEARCH_TIME_LEFT_S, SEARCH_TIME_RIGHT_S
 from tools import background_music_loop
@@ -155,7 +155,7 @@ def follow_line_until_obstacle(tank_pair, gyro, color_sensor, us_sensor, base_sp
 
 
 def search_enemies(tank_pair, medium_motor, color_sensor, us_sensor, gyro, spin_speed, forward_speed, enemies, current_turn):
-    print(f"\n[SIMULAÇÃO] Robô escaneando slots no Turno {current_turn}...")
+    print(f"\nRobot vendo slots no Turno {current_turn}...")
     
     enemies_log = ["Empty"] * 6
     
@@ -168,15 +168,15 @@ def search_enemies(tank_pair, medium_motor, color_sensor, us_sensor, gyro, spin_
             if enemies[slot_idx - 1] is None:
                 # GUARDAMOS O TIPO (ex: 'Tank') em vez da cor
                 unit_type = data['unit_type']
-                print(f"Slot {slot_idx}: Detectado {unit_type} (Surgiu no Turno {data['spawn_turn']})")
+                print(f"Slot {slot_idx}: {unit_type} (Surgiu no Turno {data['spawn_turn']})")
                 enemies_log[slot_idx - 1] = unit_type
             else:
                 # Se já existe no array 'enemies', pegamos o tipo dele
                 unit_type = enemies[slot_idx - 1].type
-                print(f"Slot {slot_idx}: Inimigo {unit_type} já conhecido/em combate.")
+                print(f"Slot {slot_idx}: {unit_type}")
                 enemies_log[slot_idx - 1] = unit_type
         else:
-            print(f"Slot {slot_idx}: Vazio (Aguardando turno de surgimento).")
+            print(f"Slot {slot_idx}: Vazio")
             enemies_log[slot_idx - 1] = None
             
     return enemies_log
@@ -196,14 +196,14 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
        
         # Verifica se o índice da linha atual esta na lista de acoes agendadas
         if current_idx in scheduled_actions:
-            print("Linha {} (Alvo) alcancada. A verificar se existe inimigo...".format(current_idx))
+            print("\nLinha {} (Alvo) alcancada. A verificar se existe inimigo...".format(current_idx))
             
             sleep(0.1) 
             distance_cm = us_sensor.distance_centimeters
             
             # Se um objeto for detetado dentro da distância definida, inicia a sequência de ataque
             if distance_cm < OBJECT_SEARCH_DISTANCE_CM:
-                print("Inimigo detetado a {}cm. A aproximar...".format(distance_cm)) 
+                print("Inimigo detetado. A aproximar...".format(distance_cm)) 
                 
                 # Avança em direção ao inimigo
                 follow_line_until_obstacle(
@@ -248,7 +248,7 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
         current_line_index = 0
         scanning = True
         
-        print("A iniciar rotina de rotacao para ataques multiplos. Alvos: {}".format(list(scheduled_actions.keys())))
+        print("\nA iniciar rotina de rotacao para ataques multiplos. Alvos: {}".format(list(scheduled_actions.keys())))
         
         # Verifica a posição inicial (linha 0) antes de começar a girar
         check_and_attack(current_line_index)
@@ -285,7 +285,7 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
                     current_line_index += num_skipped
 
             current_line_index += 1
-            print("Chegou a Linha {}".format(current_line_index)) 
+            print("\nChegou a Linha {}".format(current_line_index)) 
             
             # Verifica se a linha atual é o alvo e ataca se for
             check_and_attack(current_line_index)

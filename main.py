@@ -7,7 +7,7 @@ from enemy_attack_logic import enemy_attack_phase
 from initialize_robot_enemies import initialize_robot, initialize_enemies_by_color
 from robot_movement_logic import search_enemies
 from config import (OBSTACLE_STOP_DISTANCE_CM, OBJECT_SEARCH_DISTANCE_CM, LINE_COLOR_NAME, SPIN_SEARCH_SPEED, SEARCH_TIME_LEFT_S, SEARCH_TIME_RIGHT_S)
-
+from time import sleep
 
 enemies = [None] * 6      # Array global para armazenar os inimigos
 
@@ -20,7 +20,8 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
 
     try:
         while True:
-            print("\n=== TURNO {} ===".format(current_turn))
+            sleep(3)
+            print("\n=== TURNO {} ===\n".format(current_turn))
             if(current_turn != 1):
                 # Robot recupera 50% da energia
                 # Reset aos ataques feitos e cura do turno anterior
@@ -57,28 +58,30 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
                 current_turn=current_turn
             )
 
+            sleep(0.5)
             # Imprime os resultados do turno
-            print("\nResultado do Turno {}: {}".format(current_turn, enemies_log))
+            print("\nResultado do Turno {}: {} \n".format(current_turn, enemies_log))
             
             # Atualiza o array global 'enemies' com novos inimigos encontrados.
             # Não substitui inimigos que já existem.
-            new_enemies_list = initialize_enemies_by_color(enemies_log, current_turn)
+            new_enemies_list = initialize_enemies_by_color(enemies_log, current_turn,enemies)
             
             for i, new_enemy in enumerate(new_enemies_list):
                 if enemies[i] is None and new_enemy is not None:
-                    print("Novo inimigo adicionado na Posicao {}".format(i))
+                    print("Novo inimigo adicionado na Posicao {} do array enemies".format(i))
                     enemies[i] = new_enemy # Adiciona a nova instância
-            
+            sleep(2)
             # Imprime o estado atual do campo de batalha
             print("\n--- Campo de Batalha Atual (Turno {}) ---".format(current_turn))
             for i, enemy in enumerate(enemies):
                 if enemy is None:
-                    print("Posicao {}: Vazio".format(i+1))
+                    print("Slot {}: Vazio".format(i+1))
                 else:
-                    print("Posicao {}: {}".format(i+1, enemy))
+                    print("Slot {}: {}".format(i+1, enemy))
 
+            sleep(2)
             # Robot utiliza a cura e ataques que pode fazer no turno
-            print("FASE DE ATAQUE / CURA DO ROBOT")
+            print("\nFASE DE ATAQUE / CURA DO ROBOT")
             robot_turn_logic(
                 tank_pair=tank_pair,
                 medium_motor=medium_motor, 
