@@ -25,8 +25,10 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
             if(current_turn != 1):
                 # Robot recupera 50% da energia
                 # Reset aos ataques feitos e cura do turno anterior
+                old_energy = robot.energy
                 robot.start_new_turn()
                 print("ROBOT RECUPERA 50% DE ENERGIA E DA RESET NOS REGISTOS DE ATAQUES E CURAS DO TURNO ANTERIOR")
+                print("O Robot recuperou: {:.0f}EN".format(robot.energy-old_energy))
                 print("Energia do Robot: {:.0f}EN".format(robot.energy))
                 
                 # Inimigos do turno anterior que o robot não conseguiu matar atacam

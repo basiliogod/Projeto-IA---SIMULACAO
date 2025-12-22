@@ -58,7 +58,8 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
             attack_to_use = None
             is_kill = False
 
-
+            # Calcula ameaça real do inimigo (dano potencial)
+            enemy_threat = enemy.force * (enemy.current_health / enemy.max_health)
 
             # Verifica se consegue matar (prioridade ao mais barato que mata)
             if enemy.current_health <= ROBOT_ATTACKS["sound"]["damage"] and temp_energy >= ROBOT_ATTACKS["sound"]["cost"] + energy_reserve:
@@ -70,8 +71,8 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
             elif enemy.current_health <= ROBOT_ATTACKS["crane"]["damage"] and temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
                 attack_to_use = "crane"
                 is_kill = True
-            
-            # Se nao mata, escolhe o mais forte possivel mantendo reserva de energia
+
+            # Se não mata, escolhe o mais forte possível mantendo reserva
             if not is_kill:
                 if temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
                     attack_to_use = "crane"
@@ -79,14 +80,13 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
                     attack_to_use = "touch"
                 elif temp_energy >= ROBOT_ATTACKS["sound"]["cost"] + energy_reserve:
                     attack_to_use = "sound"
-            
+
             if attack_to_use:
-                # Score: Forca do inimigo + Bonus se matar
-                score = enemy.force
+                # Score baseado na ameaça real + bônus se matar
+                score = enemy_threat
                 if is_kill:
                     score += 10000
-                
-                # Atualiza a melhor opcao se esta for melhor
+
                 if best_option is None or score > best_option["score"]:
                     best_option = {
                         "slot_id": slot_id,
@@ -94,6 +94,7 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
                         "attack": attack_to_use,
                         "score": score
                     }
+
         
         if not best_option:
             # Nao consegue atacar mais ninguem
