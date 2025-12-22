@@ -3,7 +3,7 @@ ENEMY_STATS = {
         "color": "Green",
         "force": 200,
         "num_attacks_available": 2,
-        "max_health": 200,
+        "max_health": 400,
     },
     "Artillery": {
         "color": "Brown",

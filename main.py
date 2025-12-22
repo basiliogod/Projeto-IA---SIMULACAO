@@ -42,8 +42,7 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
                 handle_game_over(game_status)
                 break
 
-            # Aguarda pelo ENTER do utilizador para iniciar o reconhecimento do ambiente do novo turno
-            input(">>> Pressiona ENTER para iniciar o reconhecimento do ambiente do turno {}".format(current_turn))
+
 
             # Faz reconhecimento do ambiente
             enemies_log = search_enemies(

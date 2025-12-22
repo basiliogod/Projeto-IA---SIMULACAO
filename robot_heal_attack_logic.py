@@ -1,11 +1,14 @@
-from robot_class import ROBOT_ATTACKS, ROBOT_HEALS, Robot
+from robot_class import ROBOT_ATTACKS, ROBOT_HEALS, Robot, ROBOT_MAX_HEALTH
 from robot_movement_logic import rotate_perform_action_return
 from robot_attacks import sound_attack, touch_attack, crane_attack
+energy_reserve = 100                   #sim
 
 
-
+#sim
 def teste():
     print( "Teste")
+#/sim
+
 
 # Lógica de cura e de ataque do robot por turno
 def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_speed, forward_speed, robot, enemies_list):
@@ -13,7 +16,7 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
     # LÓGICA DE CURA
     
     # Vai tentar curar se tiver a vida menor que 500
-    if robot.current_health < 500 and not robot.heal_used_this_turn:
+    if robot.current_health < ((2/3) * ROBOT_MAX_HEALTH ) and not robot.heal_used_this_turn:
         
         # Tenta usar a cura mais forte primeiro
         for heal_type in ["heal3", "heal2", "heal1"]:
@@ -23,7 +26,8 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
                     print("O Robot usou a Cura '{}' (Custo {}EN) e recuperou {} de vida. Vida atual: {:.0f}. Energia restante: {:.0f}.".format(
                         heal_type, heal_info["cost"], heal_info["health_recovered"], robot.current_health, robot.energy
                     ))
-                    break
+                    print("Turno encerrado após cura para poupar energia.")
+                    return
 
 
     # LÓGICA DE ATAQUE
@@ -53,21 +57,22 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
         for slot_id, enemy in candidates:
             attack_to_use = None
             is_kill = False
-            
+
+
+
             # Verifica se consegue matar (prioridade ao mais barato que mata)
-            if enemy.current_health <= ROBOT_ATTACKS["sound"]["damage"] and temp_energy >= ROBOT_ATTACKS["sound"]["cost"]:
+            if enemy.current_health <= ROBOT_ATTACKS["sound"]["damage"] and temp_energy >= ROBOT_ATTACKS["sound"]["cost"] + energy_reserve:
                 attack_to_use = "sound"
                 is_kill = True
-            elif enemy.current_health <= ROBOT_ATTACKS["touch"]["damage"] and temp_energy >= ROBOT_ATTACKS["touch"]["cost"]:
+            elif enemy.current_health <= ROBOT_ATTACKS["touch"]["damage"] and temp_energy >= ROBOT_ATTACKS["touch"]["cost"] + energy_reserve:
                 attack_to_use = "touch"
                 is_kill = True
-            elif enemy.current_health <= ROBOT_ATTACKS["crane"]["damage"] and temp_energy >= ROBOT_ATTACKS["crane"]["cost"]:
+            elif enemy.current_health <= ROBOT_ATTACKS["crane"]["damage"] and temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
                 attack_to_use = "crane"
                 is_kill = True
             
             # Se nao mata, escolhe o mais forte possivel mantendo reserva de energia
             if not is_kill:
-                energy_reserve = 50
                 if temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
                     attack_to_use = "crane"
                 elif temp_energy >= ROBOT_ATTACKS["touch"]["cost"] + energy_reserve:
