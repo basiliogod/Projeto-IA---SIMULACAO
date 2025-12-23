@@ -118,7 +118,7 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
 def main():
 
     n = 0
-    simulations=100
+    simulations=200
     wins = 0
     defeats = 0
 
