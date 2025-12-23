@@ -13,7 +13,6 @@ def sound_attack():
 # Ataque de toque
 def touch_attack(tank_pair):
     tank_pair.on_for_rotations(SpeedPercent(-55), SpeedPercent(-55), 0.2)
-    sleep(0.2)
     tank_pair.on_for_rotations(SpeedPercent(55), SpeedPercent(55), 0.2)
 
 # Ataque de grua
@@ -22,7 +21,6 @@ def crane_attack(tank_pair, weapon_motor, color_sensor):
     # Fica de costas para o inimigo (-180º)
     tank_pair.on_for_rotations(SpeedPercent(30), SpeedPercent(30), 0.5)
     tank_pair.on(SpeedPercent(20), SpeedPercent(-20))
-    sleep(1.0)
     while color_sensor.color_name != LINE_COLOR_NAME:
         sleep(0.01)
     tank_pair.off()
@@ -34,7 +32,6 @@ def crane_attack(tank_pair, weapon_motor, color_sensor):
     # Volta à posição inicial (+180º)
     tank_pair.on_for_rotations(SpeedPercent(-20), SpeedPercent(-20), 0.5)
     tank_pair.on(SpeedPercent(-20), SpeedPercent(20))
-    sleep(1.0)
     while color_sensor.color_name != LINE_COLOR_NAME:
         sleep(0.01)
     tank_pair.off()

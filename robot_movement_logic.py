@@ -199,7 +199,6 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
         if current_idx in scheduled_actions:
             print("\nLinha {} (Alvo) alcancada. A verificar se existe inimigo...".format(current_idx))
             
-            sleep(0.1) 
             distance_cm = us_sensor.distance_centimeters
             
             # Se um objeto for detetado dentro da distância definida, inicia a sequência de ataque
@@ -235,7 +234,6 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
             
 
             tank_pair.off()
-            sleep(0.2)
 
     try:
         gyro.reset()
@@ -263,7 +261,6 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
             
             # Gira para sair da linha atual
             tank_pair.on(left_speed=spin_speed * -1, right_speed=spin_speed)
-            sleep(0.5) 
 
             # Continua a girar até o sensor de cor detetar a próxima linha vermelha
             while color_sensor.color_name != LINE_COLOR_NAME:

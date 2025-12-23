@@ -11,79 +11,98 @@ def teste():
 
 
 # Lógica de cura e de ataque do robot por turno
-def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_speed, forward_speed, robot, enemies_list):
+def robot_turn_logic(tank_pair, medium_motor, color_sensor, gyro,
+                     us_sensor, spin_speed, forward_speed,
+                     robot, enemies_list):
 
-    # LÓGICA DE CURA
-    
-    # Vai tentar curar se tiver a vida menor que 500
-    if robot.current_health < ((2/3) * ROBOT_MAX_HEALTH ) and not robot.heal_used_this_turn:
-        
-        # Tenta usar a cura mais forte primeiro
-        for heal_type in ["heal3", "heal2", "heal1"]:
-            heal_info = ROBOT_HEALS[heal_type]
-            if robot.energy >= heal_info["cost"]:
-                if robot.heal(heal_type):
-                    print("O Robot usou a Cura '{}' (Custo {}EN) e recuperou {} de vida. Vida atual: {:.0f}. Energia restante: {:.0f}.".format(
-                        heal_type, heal_info["cost"], heal_info["health_recovered"], robot.current_health, robot.energy
-                    ))
-                    print("Turno encerrado após cura para poupar energia.")
-                    return
+    # ==============================
+    # 1️⃣ Análise global
+    # ==============================
+    alive_enemies = [e for e in enemies_list if e and e.is_alive()]
+    threatening_enemies = [e for e in alive_enemies if e.num_attacks_available > 0]
 
+    if not alive_enemies:
+        print("Todos os inimigos estão mortos. Fim de jogo.")
+        return
 
-    # LÓGICA DE ATAQUE
+    # ==============================
+    # 2️⃣ Cura (apenas se houver ameaça)
+    # ==============================
+    if threatening_enemies:
+        if robot.current_health < (2/3) * ROBOT_MAX_HEALTH and not robot.heal_used_this_turn:
+            for heal_type in ["heal3", "heal2", "heal1"]:
+                heal_info = ROBOT_HEALS[heal_type]
+                if robot.energy - heal_info["cost"] >= energy_reserve:
+                    if robot.heal(heal_type):
+                        print(f"Robot usou {heal_type}.")
+                        return
 
-    # Dicionario para armazenar as acoes planeadas: { indice_linha: callback_funcao }
+    # ==============================
+    # 3️⃣ MODO CLEANUP (ninguém ataca)
+    # ==============================
+    cleanup_mode = not threatening_enemies
+
+    if cleanup_mode:
+        print("Modo cleanup: nenhum inimigo pode atacar. Robot vai acabar o jogo.")
+
+    # ==============================
+    # 4️⃣ LÓGICA DE ATAQUE
+    # ==============================
     scheduled_actions = {}
     temp_energy = robot.energy
     temp_slots_attacked = set()
 
-    # Loop de planeamento: escolhe multiplos alvos enquanto houver energia
     while True:
-        
-        # 1. Identificar candidatos validos (vivos e nao atacados neste turno)
+
         candidates = []
         for i, enemy in enumerate(enemies_list):
             slot_id = i + 1
-            if enemy and enemy.is_alive() and slot_id not in robot.slots_attacked_this_turn and slot_id not in temp_slots_attacked:
+            if (
+                enemy and enemy.is_alive()
+                and slot_id not in robot.slots_attacked_this_turn
+                and slot_id not in temp_slots_attacked
+            ):
                 candidates.append((slot_id, enemy))
-        
+
         if not candidates:
             break
 
-        # 2. Escolher o melhor alvo e ataque
         best_option = None
-        
-        # Avalia cada candidato
+
         for slot_id, enemy in candidates:
             attack_to_use = None
             is_kill = False
 
-            # Calcula ameaça real do inimigo (dano potencial)
-            enemy_threat = enemy.force * (enemy.current_health / enemy.max_health)
+            # Tentativa de kill primeiro
+            for atk in ["sound", "touch", "crane"]:
+                atk_info = ROBOT_ATTACKS[atk]
+                if (
+                    enemy.current_health <= atk_info["damage"]
+                    and temp_energy - atk_info["cost"] >= energy_reserve
+                ):
+                    attack_to_use = atk
+                    is_kill = True
+                    break
 
-            # Verifica se consegue matar (prioridade ao mais barato que mata)
-            if enemy.current_health <= ROBOT_ATTACKS["sound"]["damage"] and temp_energy >= ROBOT_ATTACKS["sound"]["cost"] + energy_reserve:
-                attack_to_use = "sound"
-                is_kill = True
-            elif enemy.current_health <= ROBOT_ATTACKS["touch"]["damage"] and temp_energy >= ROBOT_ATTACKS["touch"]["cost"] + energy_reserve:
-                attack_to_use = "touch"
-                is_kill = True
-            elif enemy.current_health <= ROBOT_ATTACKS["crane"]["damage"] and temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
-                attack_to_use = "crane"
-                is_kill = True
-
-            # Se não mata, escolhe o mais forte possível mantendo reserva
+            # Se não mata:
             if not is_kill:
-                if temp_energy >= ROBOT_ATTACKS["crane"]["cost"] + energy_reserve:
-                    attack_to_use = "crane"
-                elif temp_energy >= ROBOT_ATTACKS["touch"]["cost"] + energy_reserve:
-                    attack_to_use = "touch"
-                elif temp_energy >= ROBOT_ATTACKS["sound"]["cost"] + energy_reserve:
-                    attack_to_use = "sound"
+                if cleanup_mode:
+                    # Em cleanup, qualquer ataque forte permitido
+                    for atk in ["crane", "touch", "sound"]:
+                        atk_info = ROBOT_ATTACKS[atk]
+                        if temp_energy - atk_info["cost"] >= energy_reserve:
+                            attack_to_use = atk
+                            break
+                else:
+                    # Com ameaça, mantém lógica conservadora
+                    for atk in ["crane", "touch", "sound"]:
+                        atk_info = ROBOT_ATTACKS[atk]
+                        if temp_energy - atk_info["cost"] >= energy_reserve:
+                            attack_to_use = atk
+                            break
 
             if attack_to_use:
-                # Score baseado na ameaça real + bônus se matar
-                score = enemy_threat
+                score = enemy.force * (enemy.current_health / enemy.max_health)
                 if is_kill:
                     score += 10000
 
@@ -95,32 +114,19 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
                         "score": score
                     }
 
-        
         if not best_option:
-            # Nao consegue atacar mais ninguem
             break
-            
-        # 3. Adicionar ao planeamento
+
         target = best_option["enemy"]
         slot = best_option["slot_id"]
         attack = best_option["attack"]
-        
-        print("Planeamento: Robot vai atacar o Slot {} ({}) com '{}'.".format(slot, target.type, attack))
-        
-        # Atualiza energia temporaria e slots atacados para a proxima iteracao do loop de planeamento
+
         temp_energy -= ROBOT_ATTACKS[attack]["cost"]
         temp_slots_attacked.add(slot)
 
-        # Cria a funcao callback que sera executada quando o robot chegar ao slot
-        # Usamos uma funcao auxiliar para capturar as variaveis no closure corretamente
         def create_action_callback(atk_type, s_id, tgt_enemy):
             def callback():
-                if robot.attack_slot(attack_type=atk_type, slot_id=s_id, enemies=enemies_list):
-                    print("O Robot usou o Ataque '{}' (Custo {}EN) no Inimigo {} do Slot {}, deu {} de dano. Energia restante: {:.0f}.".format(
-                        atk_type, ROBOT_ATTACKS[atk_type]["cost"], tgt_enemy.type, s_id, ROBOT_ATTACKS[atk_type]["damage"] ,robot.energy
-                    ))
-                    
-                    # Executa o movimento fisico do ataque
+                if robot.attack_slot(atk_type, s_id, enemies_list):
                     if atk_type == "sound":
                         sound_attack()
                     elif atk_type == "touch":
@@ -128,20 +134,24 @@ def robot_turn_logic(tank_pair,medium_motor, color_sensor, gyro, us_sensor,spin_
                     elif atk_type == "crane":
                         crane_attack(tank_pair, medium_motor, color_sensor)
 
-                    if(not tgt_enemy.is_alive()):
-                        print("O inimigo {} morreu.".format(tgt_enemy.type))
+                    if not tgt_enemy.is_alive():
+                        print(f"Inimigo {tgt_enemy.type} morreu.")
             return callback
 
         scheduled_actions[slot - 1] = create_action_callback(attack, slot, target)
 
-    # 4. Executar todos os ataques planeados numa unica volta
+    # ==============================
+    # 5️⃣ Executar
+    # ==============================
     if scheduled_actions:
-        rotate_perform_action_return(tank_pair=tank_pair,
-            color_sensor=color_sensor, 
+        rotate_perform_action_return(
+            tank_pair=tank_pair,
+            color_sensor=color_sensor,
             gyro=gyro,
-            us_sensor=us_sensor, 
+            us_sensor=us_sensor,
             spin_speed=spin_speed,
             forward_speed=forward_speed,
-            scheduled_actions=scheduled_actions)
+            scheduled_actions=scheduled_actions
+        )
     else:
-        print("Robot nao tem energia suficiente para atacar nenhum alvo (ou nao existem alvos).")
+        print("Robot não atacou para manter reserva.")

@@ -9,26 +9,23 @@ from robot_movement_logic import search_enemies
 from config import (OBSTACLE_STOP_DISTANCE_CM, OBJECT_SEARCH_DISTANCE_CM, LINE_COLOR_NAME, SPIN_SEARCH_SPEED, SEARCH_TIME_LEFT_S, SEARCH_TIME_RIGHT_S)
 from time import sleep
 
+
 enemies = [None] * 6      # Array global para armazenar os inimigos
 
-
 # Loop principal do jogo
-def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro, spin_speed, forward_speed):
+def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro, spin_speed, forward_speed, enemies):
     
     current_turn = 1
 
 
     try:
         while True:
-            sleep(3)
             print("\n=== TURNO {} ===\n".format(current_turn))
             if(current_turn != 1):
                 # Robot recupera 50% da energia
                 # Reset aos ataques feitos e cura do turno anterior
-                old_energy = robot.energy
                 robot.start_new_turn()
                 print("ROBOT RECUPERA 50% DE ENERGIA E DA RESET NOS REGISTOS DE ATAQUES E CURAS DO TURNO ANTERIOR")
-                print("O Robot recuperou: {:.0f}EN".format(robot.energy-old_energy))
                 print("Energia do Robot: {:.0f}EN".format(robot.energy))
                 
                 # Inimigos do turno anterior que o robot não conseguiu matar atacam
@@ -42,7 +39,7 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
             game_status = check_game_status(robot, enemies)
             if((current_turn > 6 and game_status == "victory") or game_status == "defeat"):
                 handle_game_over(game_status)
-                break
+                return game_status
 
 
 
@@ -59,7 +56,6 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
                 current_turn=current_turn
             )
 
-            sleep(0.5)
             # Imprime os resultados do turno
             print("\nResultado do Turno {}: {} \n".format(current_turn, enemies_log))
             
@@ -71,7 +67,6 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
                 if enemies[i] is None and new_enemy is not None:
                     print("Novo inimigo adicionado na Posicao {} do array enemies".format(i))
                     enemies[i] = new_enemy # Adiciona a nova instância
-            sleep(2)
             # Imprime o estado atual do campo de batalha
             print("\n--- Campo de Batalha Atual (Turno {}) ---".format(current_turn))
             for i, enemy in enumerate(enemies):
@@ -80,7 +75,6 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
                 else:
                     print("Slot {}: {}".format(i+1, enemy))
 
-            sleep(2)
             # Robot utiliza a cura e ataques que pode fazer no turno
             print("\nFASE DE ATAQUE / CURA DO ROBOT")
             robot_turn_logic(
@@ -107,7 +101,7 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
             game_status = check_game_status(robot, enemies)
             if((current_turn > 6 and game_status == "victory") or game_status == "defeat"):
                 handle_game_over(game_status)
-                break
+                return game_status
             
             # Avança para o próximo turno
             current_turn += 1
@@ -123,47 +117,67 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
 
 def main():
 
-    tank_pair, medium_motor, color_sensor, us_sensor, gyro_sensor = initialize_hardware()
-    
-    if tank_pair is not None:
-        
-        robot = initialize_robot()      # Cria a instância do robot
-        print_initial_setup()           # Imprime a tabela do enunciado preenchida 
-        
-        # Loop principal do jogo
-        run_game_loop(
-            robot=robot,
-            tank_pair=tank_pair,
-            medium_motor=medium_motor, 
-            color_sensor=color_sensor, 
-            us_sensor=us_sensor, 
-            gyro=gyro_sensor,
-            spin_speed=20,
-            forward_speed=-20
-        )
+    n = 0
+    simulations=100
+    wins = 0
+    defeats = 0
 
-        # # --- Processar e imprimir o relatório final de inimigos ---
-        # print("\n" + "="*40)
-        # print("--- RELATORIO FINAL DE INIMIGOS ---")
-        # for i, color in enumerate(enemies_log):
-        #     position = i + 1
-        #     if color == "Empty":
-        #         print("Posicao {}: Vazio".format(position)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
-        #     else:
-        #         found_enemy = False
-        #         # Procura no dicionário importado qual inimigo corresponde à cor
-        #         for enemy_type, stats in INIMIGO_STATS.items():
-        #             if stats['cor'] == color:
-        #                 print("Posicao {}: Encontrado - {}".format(position, enemy_type)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
-        #                 found_enemy = True
-        #                 break
-        #         if not found_enemy:
-        #             # Lida com cores detetadas mas não definidas no dicionário
-        #             print("Posicao {}: Inimigo de cor desconhecida ({})".format(position, color)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
-        # print("="*40)
+    while(n<simulations):
+        print("A começar simulação {} de {}...".format(n,simulations))
+        enemies = [None] * 6    
+        tank_pair, medium_motor, color_sensor, us_sensor, gyro_sensor = initialize_hardware()
+        
+        if tank_pair is not None:
+            
+            robot = initialize_robot()      # Cria a instância do robot
+            print_initial_setup()           # Imprime a tabela do enunciado preenchida 
+            # Loop principal do jogo
+            status = run_game_loop(
+                robot=robot,
+                tank_pair=tank_pair,
+                medium_motor=medium_motor, 
+                color_sensor=color_sensor, 
+                us_sensor=us_sensor, 
+                gyro=gyro_sensor,
+                spin_speed=20,
+                forward_speed=-20,
+                enemies=enemies
+            )
+
+            if(status == "victory"):
+                wins+=1
+            if(status == "defeat"):
+                defeats+=1
+            
+
+            # # --- Processar e imprimir o relatório final de inimigos ---
+            # print("\n" + "="*40)
+            # print("--- RELATORIO FINAL DE INIMIGOS ---")
+            # for i, color in enumerate(enemies_log):
+            #     position = i + 1
+            #     if color == "Empty":
+            #         print("Posicao {}: Vazio".format(position)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
+            #     else:
+            #         found_enemy = False
+            #         # Procura no dicionário importado qual inimigo corresponde à cor
+            #         for enemy_type, stats in INIMIGO_STATS.items():
+            #             if stats['cor'] == color:
+            #                 print("Posicao {}: Encontrado - {}".format(position, enemy_type)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
+            #                 found_enemy = True
+            #                 break
+            #         if not found_enemy:
+            #             # Lida com cores detetadas mas não definidas no dicionário
+            #             print("Posicao {}: Inimigo de cor desconhecida ({})".format(position, color)) # O 'ç' em 'Posicao' foi removido para evitar erros de codificacao.
+            # print("="*40)
+        
+        else:
+            print("Falha ao inicializar hardware. A sair...")
+        n+=1
+        
     
-    else:
-        print("Falha ao inicializar hardware. A sair...")
+    print("O robot ganhou {} vezes".format(wins))
+    print("O robot perdeu {} vezes".format(defeats))
+    print("Winrate: {}".format(wins/simulations))
 
 if __name__ == "__main__":
     main()

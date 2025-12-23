@@ -24,7 +24,6 @@ def initialize_hardware():
         gyro_sensor.mode = 'GYRO-ANG' 
         print("Sensor Giroscopio (Porta 2): OK.")
         
-        sleep(2.0) 
         gyro_sensor.reset()
         
         return tank_pair, medium_motor, color_sensor, us_sensor, gyro_sensor

@@ -38,6 +38,7 @@ class Robot:
     def __init__(self):
         self.current_health = ROBOT_MAX_HEALTH
         self.energy = ROBOT_MAX_ENERGY
+        self.max_energy = ROBOT_MAX_ENERGY #sim
         self.max_health = ROBOT_MAX_HEALTH
         self.heal_used_this_turn = False
         self.slots_attacked_this_turn = set()
