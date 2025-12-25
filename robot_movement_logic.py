@@ -31,7 +31,7 @@ def perform_search_spin(tank_pair, color_sensor, us_sensor, duration_s, left_spe
         current_distance = us_sensor.distance_centimeters
         if distance_check_func(current_distance):
             return 'TARGET_REACHED'
-        sleep(0.01)
+        #sleep(0.01)
     return 'NOT_FOUND'
 
 
@@ -110,7 +110,7 @@ def follow_line_return_to_distance(tank_pair, gyro, color_sensor, us_sensor, ret
                 continue
             else:
                 break 
-        sleep(0.01)
+        #sleep(0.01)
     tank_pair.off()
 
 
@@ -137,7 +137,7 @@ def follow_line_until_obstacle(tank_pair, gyro, color_sensor, us_sensor, base_sp
                 continue
             else:
                 break 
-        sleep(0.01)
+        #sleep(0.01)
 
     # Fase 2 - Ficar a dist_phase_2 do inimigo (após cobrir cor do inimigo)
     gyro.reset() 
@@ -148,7 +148,7 @@ def follow_line_until_obstacle(tank_pair, gyro, color_sensor, us_sensor, base_sp
         left_speed = clamp_speed(base_speed - correction)
         right_speed = clamp_speed(base_speed + correction)
         tank_pair.on(left_speed, right_speed)
-        sleep(0.01)
+        #sleep(0.01)
 
     tank_pair.off()
 
@@ -264,7 +264,8 @@ def rotate_perform_action_return(tank_pair, color_sensor, gyro, us_sensor, spin_
 
             # Continua a girar até o sensor de cor detetar a próxima linha vermelha
             while color_sensor.color_name != LINE_COLOR_NAME:
-                sleep(0.01)
+                #sleep(0.01)
+                pass
             
             tank_pair.off()
 
