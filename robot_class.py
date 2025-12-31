@@ -42,6 +42,7 @@ class Robot:
         self.max_health = ROBOT_MAX_HEALTH
         self.heal_used_this_turn = False
         self.slots_attacked_this_turn = set()
+        self.enemies_killed = 0
 
     # Rotina de início de truno
     def start_new_turn(self):
