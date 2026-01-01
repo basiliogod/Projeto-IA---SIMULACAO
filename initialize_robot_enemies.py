@@ -10,7 +10,7 @@ from robot_class import ROBOT_ATTACKS, ROBOT_HEALS, Robot
 from robot_attacks import touch_attack, sound_attack, crane_attack
 from game_logic import check_game_status, handle_game_over
 from robot_movement_logic import search_enemies
-from robot_heal_attack_logic import robot_turn_logic
+from robot_attack_logic import robot_turn_logic
 from enemy_attack_logic import enemy_attack_phase
 
 # Inicializa o robot

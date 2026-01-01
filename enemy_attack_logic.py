@@ -1,3 +1,5 @@
+from robot_attack_logic import handle_emergency_heal
+
 # Lógica de ataque dos inimigos contra o robot
 # Um inimigo só ataca se o turno atual for maior que o seu turno de spawn
 def enemy_attack_phase(robot, enemies_list, current_turn):
@@ -17,6 +19,7 @@ def enemy_attack_phase(robot, enemies_list, current_turn):
                 print("O Inimigo '{}' acabou os seus ataques".format(enemy.type))
     
     if total_damage > 0:
+        handle_emergency_heal(robot, total_damage)
         robot.receive_damage(total_damage)
     
     

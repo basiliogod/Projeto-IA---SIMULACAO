@@ -2,7 +2,7 @@ import os
 from hardware import initialize_hardware
 from tools import print_initial_setup
 from game_logic import check_game_status, handle_game_over
-from robot_heal_attack_logic import robot_turn_logic
+from robot_attack_logic import robot_turn_logic
 from enemy_attack_logic import enemy_attack_phase
 from initialize_robot_enemies import initialize_robot, initialize_enemies_by_color
 from robot_movement_logic import search_enemies
@@ -118,7 +118,7 @@ def run_game_loop(robot, tank_pair, medium_motor, color_sensor, us_sensor, gyro,
 def main():
 
     n = 0
-    simulations=10000
+    simulations=500
     wins = 0
     defeats = 0
 
