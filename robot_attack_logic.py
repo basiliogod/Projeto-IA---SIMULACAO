@@ -18,12 +18,12 @@ LOW_HEALTH_THRESHOLD = 250
 
 # --- Fatores de Pontuação para Ataques ---
 EFFICIENCY_MULTIPLIER = 1000  # Multiplicador para a eficiência do ataque.
-ELIMINATION_BONUS_FACTOR = 15  # Bônus por eliminação, multiplicado pela força do inimigo.
+ELIMINATION_BONUS_FACTOR = 10  # Bônus por eliminação, multiplicado pela força do inimigo.
 OVERKILL_PENALTY_FACTOR = 2  # Penalidade por dano excessivo.
 
 # Bônus de pontuação para priorizar tipos de inimigos específicos.
-ARTILLERY_TYPE_BONUS = 5000
-TANK_TYPE_BONUS = 2000
+ARTILLERY_TYPE_BONUS = 4000
+TANK_TYPE_BONUS = 1000
 
 # --- Funções Auxiliares ---
 
@@ -152,7 +152,7 @@ def robot_turn_logic(tank_pair, medium_motor, color_sensor, gyro,
         best_option = _find_best_action(candidates, temp_energy, energy_reserve)
         if not best_option:
             break
-
+        
         # Registra a ação e atualiza o estado temporário.
         slot = best_option["slot_id"]
         attack_type = best_option["attack"]
@@ -208,7 +208,7 @@ def handle_emergency_heal(robot, total_incoming_damage):
 
         for heal_type, heal_info in sorted_heals:
             if heal_info['health_recovered'] >= health_needed:
-                if robot.energy >= heal_info['cost']:
+                if robot.energy - heal_info['cost'] >= MINIMUM_SURVIVAL_ENERGY:
                     best_heal = (heal_type, heal_info)
                     break # Encontrou a cura mais barata e viável
 
@@ -219,4 +219,3 @@ def handle_emergency_heal(robot, total_incoming_damage):
             robot.heal(heal_type)
         else:
             print("AVISO: Nenhuma cura de emergência eficaz ou acessível disponível. O robô pode ser destruído.")
-
